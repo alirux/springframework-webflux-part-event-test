@@ -41,7 +41,7 @@ public class UploadStream {
 				acc.lastIsTrueCount = pe.isLast() ? acc.lastIsTrueCount + 1 : acc.lastIsTrueCount;
 				log.info("Part event name:{} last:{} length:{} byteCount:{} diff:{} acc:{} content:{} partEvent:{}", pe.name(), pe.isLast(), length, acc.byteCount, length - acc.byteCount, acc, content, pe);
 				if (pe.isLast()) {
-					log.debug("Last buffer:\n{}", content.toString(Charset.defaultCharset()));
+					log.info("Last buffer:\n{}", content.toString(Charset.defaultCharset()));
 				}
 				appendToFile(outFile, content);
 				return content;

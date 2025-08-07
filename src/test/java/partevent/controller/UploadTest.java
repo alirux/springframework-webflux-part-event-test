@@ -24,7 +24,11 @@ class UploadTest {
 		
 		client.post().uri("/stream").bodyValue(parts)
 		.header("content-type", MediaType.MULTIPART_FORM_DATA.toString())
-		.exchange().expectStatus().isOk();
+		.exchange()
+		.expectStatus().isOk()
+		.returnResult(String.class) // Declare that you want to handle the result
+        .getResponseBody()        // Get the response body Flux
+        .blockLast();             // Wait until the response stream completes;
 	}
 
 	@Test
@@ -46,7 +50,11 @@ class UploadTest {
 		
 		client.post().uri("/stream").bodyValue(parts)
 		.header("content-type", MediaType.MULTIPART_FORM_DATA.toString())
-		.exchange().expectStatus().isOk();
+		.exchange()
+		.expectStatus().isOk()
+		.returnResult(String.class) // Declare that you want to handle the result
+        .getResponseBody()        // Get the response body Flux
+        .blockLast();             // Wait until the response stream completes;
 	}
 	
 }
