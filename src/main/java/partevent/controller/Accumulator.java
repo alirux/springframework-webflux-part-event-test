@@ -6,7 +6,7 @@ import lombok.ToString;
 public class Accumulator {
 	
 	long byteCount;
-	int count;
-	int trueCount;
+	int partCount;
+	int lastIsTrueCount;
 
 }

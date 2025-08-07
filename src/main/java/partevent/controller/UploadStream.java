@@ -2,6 +2,11 @@ package partevent.controller;
 
 import static org.springframework.http.ResponseEntity.ok;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -25,14 +30,20 @@ public class UploadStream {
 		
 		Accumulator acc = new Accumulator();
 		long length = headers.getContentLength();
+		File outFile = new File("uploaded_file.bin");
+		outFile.delete();
 		
 		var result = allPartsEvents.map(pe -> {
 			if (pe instanceof FilePartEvent fileEvent) {
 				DataBuffer content = fileEvent.content();
 				acc.byteCount += content.readableByteCount();
-				acc.count++;
-				acc.trueCount = pe.isLast() ? acc.trueCount + 1 : acc.trueCount;
-				log.info("Part event name:{} last:{} diff:{} acc:{} content:{} partEvent:{}", pe.name(), pe.isLast(), length - acc.byteCount, acc, content, pe);
+				acc.partCount++;
+				acc.lastIsTrueCount = pe.isLast() ? acc.lastIsTrueCount + 1 : acc.lastIsTrueCount;
+				log.info("Part event name:{} last:{} length:{} byteCount:{} diff:{} acc:{} content:{} partEvent:{}", pe.name(), pe.isLast(), length, acc.byteCount, length - acc.byteCount, acc, content, pe);
+				if (pe.isLast()) {
+					log.debug("Last buffer:\n{}", content.toString(Charset.defaultCharset()));
+				}
+				appendToFile(outFile, content);
 				return content;
 			}
 			throw new RuntimeException("Unexpected event: " + pe);
@@ -41,6 +52,14 @@ public class UploadStream {
 		;
 		
 		return ok().body(result);
+	}
+
+	private void appendToFile(File outFile, DataBuffer content) {
+		try (FileWriter fw = new FileWriter(outFile, true)) {
+			fw.write(content.toString(Charset.defaultCharset()));
+		} catch (IOException e) {
+			log.error("Saving file:{}", outFile, e);
+		}
 	}
 	
 	@PostMapping("/stream2")
@@ -53,7 +72,7 @@ public class UploadStream {
 			if (pe instanceof FilePartEvent fileEvent) {
 				DataBuffer content = fileEvent.content();
 				acc.byteCount += content.readableByteCount();
-				acc.count++;
+				acc.partCount++;
 				log.info("Part event name:{} last:{} diff:{} acc:{} content:{} partEvent:{}", pe.name(), pe.isLast(), length - acc.byteCount, acc, content, pe);
 				return acc;
 			}
